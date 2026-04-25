@@ -1,5 +1,6 @@
 import pygame
 import random
+import asyncio
 
 # --- CS Setup ---
 pygame.init()
@@ -17,6 +18,16 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GREEN = (100, 200, 100)
 RED = (200, 100, 100)
+
+# --- CONFETTI COLORS (NEW!) ---
+CONFETTI_COLORS = [
+    (255, 0, 0),    # Red
+    (0, 255, 0),    # Green
+    (0, 0, 255),    # Blue
+    (255, 255, 0),  # Yellow
+    (255, 165, 0),  # Orange
+    (255, 105, 180) # Hot Pink
+]
 
 class Puppy:
     def __init__(self):
@@ -130,19 +141,18 @@ garden_data.sort(key=lambda item: item[1][1])
 scale_factor = 2
 small_font = pygame.font.Font(None, 18)
 
-# Function to easily create pixelated text
 def create_pixel_text(text_string):
     text_small = small_font.render(text_string, False, BLACK)
     return pygame.transform.scale(text_small, (text_small.get_width() * scale_factor, text_small.get_height() * scale_factor))
 
-# Promposal Text (No Shadows)
+# Promposal Text
 scaled_text1 = create_pixel_text("It would be paws-itively amazing")
 scaled_text1_rect = scaled_text1.get_rect(center=(SCREEN_WIDTH // 2, 25))
 
 scaled_text2 = create_pixel_text("if you'd go to prom with me!")
 scaled_text2_rect = scaled_text2.get_rect(center=(SCREEN_WIDTH // 2, 55))
 
-# Celebration Text (Hidden until they click YES)
+# Celebration Text
 yay_text = create_pixel_text("YAY! Best Prom Ever!")
 yay_rect = yay_text.get_rect(center=(SCREEN_WIDTH // 2, 40))
 
@@ -150,65 +160,87 @@ yay_rect = yay_text.get_rect(center=(SCREEN_WIDTH // 2, 40))
 yes_btn = pygame.Rect(100, 85, 70, 35)
 no_btn = pygame.Rect(230, 85, 70, 35)
 
-# Button Text
 yes_text = create_pixel_text("YES")
 yes_text_rect = yes_text.get_rect(center=yes_btn.center)
 
 no_text = create_pixel_text("NO")
 no_text_rect = no_text.get_rect(center=no_btn.center)
 
-prom_accepted = False # This tracks if they clicked YES!
 
-# --- Main Loop ---
-my_dog = Puppy()
-running = True
-
-while running:
-    # 1. Background
-    screen.blit(background_img, (0, 0))
+# --- Main Loop wrapped for the Web ---
+async def main():
+    my_dog = Puppy()
+    running = True
+    prom_accepted = False
     
-    # --- EVENT LOGIC (Mouse Clicks) ---
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-            
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            # Check if they clicked the YES button
-            if yes_btn.collidepoint(event.pos) and not prom_accepted:
-                prom_accepted = True
-            
-            # If they click the NO button, absolutely nothing happens!
-            if no_btn.collidepoint(event.pos):
-                pass 
+    # List to hold our confetti particles
+    confetti_particles = []
 
-    # 2. Draw Text and Buttons
-    if not prom_accepted:
-        # Draw Question
-        screen.blit(scaled_text1, scaled_text1_rect)
-        screen.blit(scaled_text2, scaled_text2_rect)
+    while running:
+        # 1. Background
+        screen.blit(background_img, (0, 0))
         
-        # Draw YES Button (Green)
-        pygame.draw.rect(screen, GREEN, yes_btn)
-        pygame.draw.rect(screen, BLACK, yes_btn, 3) # Black border
-        screen.blit(yes_text, yes_text_rect)
+        # --- EVENT LOGIC (Mouse Clicks) ---
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+                
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                if yes_btn.collidepoint(event.pos) and not prom_accepted:
+                    prom_accepted = True
+                    
+                    # --- SPAWN CONFETTI! ---
+                    # Create 150 particles bursting from the YES button
+                    for _ in range(150):
+                        cx, cy = yes_btn.center
+                        vx = random.uniform(-6, 6)    # Horizontal burst speed
+                        vy = random.uniform(-12, -4)  # Upward burst speed
+                        color = random.choice(CONFETTI_COLORS)
+                        size = random.randint(4, 8)   # Random chunk size
+                        
+                        # Add to list as: [X, Y, X_Speed, Y_Speed, Color, Size]
+                        confetti_particles.append([cx, cy, vx, vy, color, size])
+                
+                # NO button does nothing!
+                if no_btn.collidepoint(event.pos):
+                    pass 
+
+        # 2. Draw Text, Buttons, and Celebration
+        if not prom_accepted:
+            screen.blit(scaled_text1, scaled_text1_rect)
+            screen.blit(scaled_text2, scaled_text2_rect)
+            
+            pygame.draw.rect(screen, GREEN, yes_btn)
+            pygame.draw.rect(screen, BLACK, yes_btn, 3) 
+            screen.blit(yes_text, yes_text_rect)
+            
+            pygame.draw.rect(screen, RED, no_btn)
+            pygame.draw.rect(screen, BLACK, no_btn, 3) 
+            screen.blit(no_text, no_text_rect)
+        else:
+            screen.blit(yay_text, yay_rect)
+            
+            # --- UPDATE AND DRAW CONFETTI ---
+            for particle in confetti_particles:
+                particle[0] += particle[2]  # Move X
+                particle[1] += particle[3]  # Move Y
+                particle[3] += 0.4          # Add Gravity pulling down
+                
+                # Draw the specific confetti particle
+                pygame.draw.rect(screen, particle[4], (particle[0], particle[1], particle[5], particle[5]))
+
+        # 3. Garden
+        for flwr_img, flwr_pos in garden_data:
+            screen.blit(flwr_img, flwr_pos)
+
+        # 4. Dog
+        my_dog.update()
+        my_dog.draw(screen)
+
+        pygame.display.flip()
+        clock.tick(60)
         
-        # Draw NO Button (Red)
-        pygame.draw.rect(screen, RED, no_btn)
-        pygame.draw.rect(screen, BLACK, no_btn, 3) # Black border
-        screen.blit(no_text, no_text_rect)
-    else:
-        # If they clicked YES, hide buttons and show celebration text!
-        screen.blit(yay_text, yay_rect)
+        await asyncio.sleep(0)
 
-    # 3. Garden
-    for flwr_img, flwr_pos in garden_data:
-        screen.blit(flwr_img, flwr_pos)
-
-    # 4. Dog
-    my_dog.update()
-    my_dog.draw(screen)
-
-    pygame.display.flip()
-    clock.tick(60)
-
-pygame.quit()
+# Run the async main loop
+asyncio.run(main())
