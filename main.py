@@ -2,10 +2,9 @@ import pygame
 import random
 import asyncio
 
-# --- CS Setup (REMOVED FULL INIT TO SKIP SOUND) ---
-pygame.display.init() # Only start the screen
-pygame.font.init()    # Only start the text
-# --------------------------------------------------
+pygame.display.init() 
+pygame.font.init()    
+
 
 SCREEN_WIDTH = 400
 SCREEN_HEIGHT = 400
@@ -13,7 +12,7 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("A Paws-itive Promposal!")
 clock = pygame.time.Clock()
 
-# --- COLORS ---
+
 SKY_BLUE = (135, 206, 235) 
 GRASS_GREEN = (50, 160, 50)
 DARK_GRASS = (40, 130, 40)
@@ -75,7 +74,6 @@ class Puppy:
             draw_rect = self.rect
         surface.blit(anim_img, draw_rect)
 
-# --- BACKGROUND & GARDEN ---
 bg_low_res = pygame.Surface((100, 100))
 pygame.draw.rect(bg_low_res, SKY_BLUE, (0, 0, 100, 50))
 pygame.draw.rect(bg_low_res, GRASS_GREEN, (0, 50, 100, 50))
@@ -100,7 +98,6 @@ for cx, cy in cluster_centers:
 garden_data.append((random.choice(flower_options), (120, 210)))
 garden_data.sort(key=lambda item: item[1][1])
 
-# --- TEXT & BUTTONS ---
 scale_factor, small_font = 2, pygame.font.Font(None, 18)
 def create_pixel_text(text_string):
     text_small = small_font.render(text_string, False, BLACK)
@@ -116,7 +113,6 @@ yes_btn, no_btn = pygame.Rect(100, 85, 70, 35), pygame.Rect(230, 85, 70, 35)
 yes_text, no_text = create_pixel_text("YES"), create_pixel_text("NO")
 yes_text_rect, no_text_rect = yes_text.get_rect(center=yes_btn.center), no_text.get_rect(center=no_btn.center)
 
-# --- MAIN WEB LOOP ---
 async def main():
     my_dog = Puppy()
     running, prom_accepted, confetti_particles = True, False, []
