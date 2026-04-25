@@ -9,7 +9,7 @@ pygame.font.init()
 SCREEN_WIDTH = 400
 SCREEN_HEIGHT = 400
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("A Paws-itive Promposal!")
+pygame.display.set_caption("Promposal")
 clock = pygame.time.Clock()
 
 
