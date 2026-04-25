@@ -2,7 +2,6 @@ import pygame
 import random
 import asyncio
 
-# --- CS Setup ---
 pygame.init()
 SCREEN_WIDTH = 400
 SCREEN_HEIGHT = 400
@@ -10,7 +9,6 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("A Paws-itive Promposal!")
 clock = pygame.time.Clock()
 
-# --- COLORS ---
 SKY_BLUE = (135, 206, 235) 
 GRASS_GREEN = (50, 160, 50)
 DARK_GRASS = (40, 130, 40)
@@ -19,19 +17,18 @@ BLACK = (0, 0, 0)
 GREEN = (100, 200, 100)
 RED = (200, 100, 100)
 
-# --- CONFETTI COLORS (NEW!) ---
 CONFETTI_COLORS = [
-    (255, 0, 0),    # Red
-    (0, 255, 0),    # Green
-    (0, 0, 255),    # Blue
-    (255, 255, 0),  # Yellow
-    (255, 165, 0),  # Orange
-    (255, 105, 180) # Hot Pink
+    (255, 0, 0),    
+    (0, 255, 0),    
+    (0, 0, 255),    
+    (255, 255, 0),  
+    (255, 165, 0),  
+    (255, 105, 180) 
 ]
 
 class Puppy:
     def __init__(self):
-        # 1. LOAD DOG ASSETS
+
         self.img_open = pygame.image.load('open1.png').convert_alpha()
         self.img_semi = pygame.image.load('open2.png').convert_alpha()
         self.img_closed = pygame.image.load('closed.png').convert_alpha()
@@ -40,7 +37,6 @@ class Puppy:
         self.base_semi = pygame.transform.scale(self.img_semi, (128, 128))
         self.base_closed = pygame.transform.scale(self.img_closed, (128, 128))
         
-        # 2. PHYSICS & POSITION
         self.rect = self.base_open.get_rect(center=(200, 185))
         self.vel_y = 0          
         self.gravity = 0.8      
@@ -97,9 +93,6 @@ class Puppy:
 
         surface.blit(anim_img, draw_rect)
 
-# ==========================================
-# --- BACKGROUND & GARDEN ---
-# ==========================================
 bg_low_res = pygame.Surface((100, 100))
 pygame.draw.rect(bg_low_res, SKY_BLUE, (0, 0, 100, 50))
 pygame.draw.rect(bg_low_res, GRASS_GREEN, (0, 50, 100, 50))
@@ -135,9 +128,7 @@ hero_flower = random.choice(flower_options)
 garden_data.append((hero_flower, (120, 210)))
 garden_data.sort(key=lambda item: item[1][1])
 
-# ==========================================
-# --- TEXT & BUTTON SETUP ---
-# ==========================================
+
 scale_factor = 2
 small_font = pygame.font.Font(None, 18)
 
@@ -145,18 +136,15 @@ def create_pixel_text(text_string):
     text_small = small_font.render(text_string, False, BLACK)
     return pygame.transform.scale(text_small, (text_small.get_width() * scale_factor, text_small.get_height() * scale_factor))
 
-# Promposal Text
 scaled_text1 = create_pixel_text("It would be paws-itively amazing")
 scaled_text1_rect = scaled_text1.get_rect(center=(SCREEN_WIDTH // 2, 25))
 
 scaled_text2 = create_pixel_text("if you'd go to prom with me!")
 scaled_text2_rect = scaled_text2.get_rect(center=(SCREEN_WIDTH // 2, 55))
 
-# Celebration Text
 yay_text = create_pixel_text("YAY! Best Prom Ever!")
 yay_rect = yay_text.get_rect(center=(SCREEN_WIDTH // 2, 40))
 
-# Button Rectangles
 yes_btn = pygame.Rect(100, 85, 70, 35)
 no_btn = pygame.Rect(230, 85, 70, 35)
 
@@ -167,20 +155,19 @@ no_text = create_pixel_text("NO")
 no_text_rect = no_text.get_rect(center=no_btn.center)
 
 
-# --- Main Loop wrapped for the Web ---
 async def main():
     my_dog = Puppy()
     running = True
     prom_accepted = False
     
-    # List to hold our confetti particles
+
     confetti_particles = []
 
     while running:
-        # 1. Background
+
         screen.blit(background_img, (0, 0))
         
-        # --- EVENT LOGIC (Mouse Clicks) ---
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -189,23 +176,22 @@ async def main():
                 if yes_btn.collidepoint(event.pos) and not prom_accepted:
                     prom_accepted = True
                     
-                    # --- SPAWN CONFETTI! ---
-                    # Create 150 particles bursting from the YES button
+
                     for _ in range(150):
                         cx, cy = yes_btn.center
-                        vx = random.uniform(-6, 6)    # Horizontal burst speed
-                        vy = random.uniform(-12, -4)  # Upward burst speed
+                        vx = random.uniform(-6, 6)   
+                        vy = random.uniform(-12, -4) 
                         color = random.choice(CONFETTI_COLORS)
-                        size = random.randint(4, 8)   # Random chunk size
+                        size = random.randint(4, 8)   
                         
-                        # Add to list as: [X, Y, X_Speed, Y_Speed, Color, Size]
+
                         confetti_particles.append([cx, cy, vx, vy, color, size])
                 
-                # NO button does nothing!
+
                 if no_btn.collidepoint(event.pos):
                     pass 
 
-        # 2. Draw Text, Buttons, and Celebration
+
         if not prom_accepted:
             screen.blit(scaled_text1, scaled_text1_rect)
             screen.blit(scaled_text2, scaled_text2_rect)
@@ -220,20 +206,20 @@ async def main():
         else:
             screen.blit(yay_text, yay_rect)
             
-            # --- UPDATE AND DRAW CONFETTI ---
+
             for particle in confetti_particles:
-                particle[0] += particle[2]  # Move X
-                particle[1] += particle[3]  # Move Y
-                particle[3] += 0.4          # Add Gravity pulling down
+                particle[0] += particle[2]  
+                particle[1] += particle[3]  
+                particle[3] += 0.4          
                 
-                # Draw the specific confetti particle
+
                 pygame.draw.rect(screen, particle[4], (particle[0], particle[1], particle[5], particle[5]))
 
-        # 3. Garden
+
         for flwr_img, flwr_pos in garden_data:
             screen.blit(flwr_img, flwr_pos)
 
-        # 4. Dog
+
         my_dog.update()
         my_dog.draw(screen)
 
@@ -242,5 +228,5 @@ async def main():
         
         await asyncio.sleep(0)
 
-# Run the async main loop
+
 asyncio.run(main())
